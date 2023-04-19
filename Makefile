@@ -1,8 +1,5 @@
-all: eventbuf.c
-	gcc -Wall -Wextra -g -o $@ $^ -lpthread
-
-eventbuf: eventbuf.c
+pcseml: pcseml.c eventbuf.c
 	gcc -Wall -Wextra -g -o $@ $^ -lpthread
 
 clean:
-	rm -f eventbuf
+	rm -f pcseml

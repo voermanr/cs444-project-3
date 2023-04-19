@@ -1,7 +1,7 @@
 #ifndef EVENTBUF_H
 #define EVENTBUF_H
 
-int parse_command_line(char** arg, int *p, int *c, int *e, int *m);
+
 
 struct eventbuf *event_buffer;
 
@@ -44,12 +44,6 @@ struct eventbuf *event_buffer;
 struct eventbuf {
     struct eventbuf_node *head, *tail;
 };
-
-int start_producers(int producers);
-int start_consumers(int producers);
-int wait_for_producers();
-int notify_consumers();
-int wait_for_consumers();
 
 struct eventbuf *eventbuf_create(void);
 void eventbuf_free(struct eventbuf *eb);
