@@ -1,3 +1,5 @@
+.PHONY: clean
+
 pcseml: pcseml.c eventbuf.c
 	gcc -Wall -Wextra -g -o $@ $^ -lpthread
 
