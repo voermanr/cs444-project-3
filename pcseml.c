@@ -29,6 +29,7 @@ sem_t *sem_open_temp(const char *name, int value)
 }
 
 int notify_consumers() {
+    //TODO: beef em up
     return 0;
 }
 
@@ -37,11 +38,16 @@ int wait_for_producers() {
 }
 
 int wait_for_consumers() {
+    //TODO: add new flesh
     return 0;
 }
 
-int start_consumers(int numConsumers) {
-    return numConsumers;
+void start_consumers(pthread_t *consumer, int *consumer_id) {
+    //TODO: add more meat to the bones
+    for (int i = 0; i < numProducers; i++) {
+        consumer_id[i] = i;
+        pthread_create(consumer + i, NULL, consume, consumer_id + i);
+    }
 }
 
 int start_producers(int numProducers) {
@@ -97,9 +103,10 @@ int main(int argc, char* argv[]) {
         int *thread_id = calloc(numProducers, sizeof *thread_id);
         pthread_t *thread = calloc(numProducers, sizeof *thread);
 
-        thread_id[i] = i;
-        pthread_create(thread + i, NULL, produce, thread_id + i);
-    }
+    pthread_t *consumer;
+    int *consumer_id;
+    setup_consumer_threads(&consumer, &consumer_id);
+    start_consumers(consumer, consumer_id);
 
     start_consumers(consumers);
 
