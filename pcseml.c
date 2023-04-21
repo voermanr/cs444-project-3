@@ -33,8 +33,11 @@ int notify_consumers() {
     return 0;
 }
 
-int wait_for_producers() {
-    return 0;
+int wait_for_producers(pthread_t *producer) {
+    for (int i = 0; i < numProducers; i++) {
+        pthread_join(producer[i], NULL);
+    }
+    return numProducers;
 }
 
 int wait_for_consumers() {
@@ -50,7 +53,44 @@ void start_consumers(pthread_t *consumer, int *consumer_id) {
     }
 }
 
-int start_producers(int numProducers) {
+void *produce(void *arg) {
+    int *id = arg;
+
+    for (int i = 0; i < events; ++i) {
+        //TODO: Wait to see if there's enough space in the event buffer to post.
+        sem_wait(free_spots);
+
+        //TODO: Lock a mutex around the eventbuf.
+        sem_wait(mutex);
+
+        //TODO: Print ;that it's adding the event, along with the event number.
+        printf("P%d: adding event %d\n", *id, i);
+
+        //TODO: Add an event to the eventbuf.
+        eventbuf_add(event_buffer, i);
+
+        //TODO: Unlock the mutex.
+        sem_post(mutex);
+
+        //TODO: Signal waiting consumer threads that there is an event to be consumed.
+        sem_post(free_spots);
+    }
+
+    printf("P%d: exiting\n", *id);
+
+    return NULL;
+}
+
+void *consume (void *arg) {
+    //TODO: make better
+    return NULL;
+}
+
+int start_producers(pthread_t *producer, int *producer_id) {
+    for (int i = 0; i < numProducers; i++) {
+        producer_id[i] = i;
+        pthread_create(producer + i, NULL, produce, producer_id + i);
+    }
     return numProducers;
 }
 
@@ -81,6 +121,26 @@ void *produce() {
     return NULL;
 }
 
+void setup_producer_threads(pthread_t **producer, int **producer_id) {
+    // I'm stealing this from you
+
+    // Allocate producer handle array for all brokers
+    *producer_id = calloc(numProducers, sizeof *producer_id);
+
+    // Allocate producer ID array for all brokers
+    *producer = calloc(numProducers, sizeof *producer);
+}
+
+void setup_consumer_threads(pthread_t **producer, int **consumer_id) {
+    // I'm stealing this from you
+
+    // Allocate producer handle array for all brokers
+    consumer_id = calloc(numProducers, sizeof *consumer_id);
+
+    // Allocate producer ID array for all brokers
+    producer = calloc(numProducers, sizeof *producer);
+}
+
 int main(int argc, char* argv[]) {
     validate_input(argc);
 
@@ -95,22 +155,17 @@ int main(int argc, char* argv[]) {
 
     event_buffer = eventbuf_create();
 
-
-
-    start_producers(numProducers);
-
-    for (int i = 0; i < numProducers; i++) {
-        int *thread_id = calloc(numProducers, sizeof *thread_id);
-        pthread_t *thread = calloc(numProducers, sizeof *thread);
+    pthread_t *producer;
+    int *producer_id;
+    setup_producer_threads(&producer, &producer_id);
+    start_producers(producer, producer_id);
 
     pthread_t *consumer;
     int *consumer_id;
     setup_consumer_threads(&consumer, &consumer_id);
     start_consumers(consumer, consumer_id);
 
-    start_consumers(consumers);
-
-    wait_for_producers();
+    wait_for_producers(producer);
 
     notify_consumers();
 
