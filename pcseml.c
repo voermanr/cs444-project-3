@@ -57,22 +57,16 @@ void *produce(void *arg) {
     int *id = arg;
 
     for (int i = 0; i < events; ++i) {
-        //TODO: Wait to see if there's enough space in the event buffer to post.
         sem_wait(free_spots);
 
-        //TODO: Lock a mutex around the eventbuf.
         sem_wait(mutex);
 
-        //TODO: Print ;that it's adding the event, along with the event number.
         printf("P%d: adding event %d\n", *id, i);
 
-        //TODO: Add an event to the eventbuf.
         eventbuf_add(event_buffer, i);
 
-        //TODO: Unlock the mutex.
         sem_post(mutex);
 
-        //TODO: Signal waiting consumer threads that there is an event to be consumed.
         sem_post(free_spots);
     }
 
