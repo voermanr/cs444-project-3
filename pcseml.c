@@ -94,11 +94,11 @@ int start_producers(pthread_t *producer, int *producer_id) {
     return numProducers;
 }
 
-int parse_command_line(char** arg, int *producers, int *consumers, int *events, int *maximum) {
-    *producers = (int)strtol((arg[1]),NULL,10);
-    *consumers = (int)strtol((arg[2]),NULL,10);
-    *events = (int)strtol((arg[3]),NULL,10);
-    *maximum = (int)strtol((arg[4]),NULL,10);
+int parse_command_line(char **arg) {
+    numProducers = (int)strtol((arg[1]),NULL,10);
+    consumers = (int)strtol((arg[2]),NULL,10);
+    events = (int)strtol((arg[3]),NULL,10);
+    numMaximum = (int)strtol((arg[4]),NULL,10);
 
     return 0;
 }
@@ -110,15 +110,10 @@ void validate_input(int argc) {
     }
 }
 
-void *produce() {
-    //TODO: Wait to see if there's enough space in the event buffer to post.
-    //TODO: Lock a mutex around the eventbuf.
-    //TODO: Print that it's adding the event, along with the event number.
-    //TODO: Add an event to the eventbuf.
-    //TODO: Unlock the mutex.
-    //TODO: Signal waiting consumer threads that there is an event to be consumed.
-
-    return NULL;
+void setup_the_semaphores_of_Gondor() {
+    mutex = sem_open_temp("mutex-semaphore", 1);
+    free_spots = sem_open_temp("free-spots", numMaximum);
+    items = sem_open_temp("items",0);
 }
 
 void setup_producer_threads(pthread_t **producer, int **producer_id) {
@@ -144,14 +139,9 @@ void setup_consumer_threads(pthread_t **producer, int **consumer_id) {
 int main(int argc, char* argv[]) {
     validate_input(argc);
 
-    int numProducers, consumers, events, numMaximum;
+    parse_command_line(argv);
 
-    parse_command_line(argv, &numProducers, &consumers, &events, &numMaximum);
-
-    mutex = sem_open_temp("mutex-semaphore",1);
-    free_spots = sem_open_temp("free-spots", numMaximum);
-    items = sem_open_temp("items",0);
-
+    setup_the_semaphores_of_Gondor();
 
     event_buffer = eventbuf_create();
 
