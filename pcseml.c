@@ -6,6 +6,10 @@
 #include <fcntl.h>
 
 sem_t *mutex, *free_spots, *items;
+int numProducers;
+int consumers;
+int events;
+int numMaximum;
 
 sem_t *sem_open_temp(const char *name, int value)
 {
