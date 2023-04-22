@@ -37,7 +37,6 @@ void wait_for_producers(pthread_t *producer) {
     for (int i = 0; i < numProducers; i++) {
         pthread_join(producer[i], NULL);
     }
-    return numProducers;
 }
 
 void wait_for_consumers(pthread_t *consumer) {
