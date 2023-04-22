@@ -28,11 +28,6 @@ sem_t *sem_open_temp(const char *name, int value)
     return sem;
 }
 
-int notify_consumers() {
-    //TODO: beef em up
-    return 0;
-}
-
 void wait_for_producers(pthread_t *producer) {
     for (int i = 0; i < numProducers; i++) {
         pthread_join(producer[i], NULL);
@@ -48,7 +43,6 @@ void wait_for_consumers(pthread_t *consumer) {
 void *consume (void *arg) {
     int *id = arg;
 
-    //TODO: make better
     while(1) {
         sem_wait(items);
 
@@ -74,7 +68,6 @@ void *consume (void *arg) {
 }
 
 void start_consumers(pthread_t *consumer, int *consumer_id) {
-    //TODO: add more meat to the bones
     for (int i = 0; i < numConsumers; i++) {
         consumer_id[i] = i;
         pthread_create(consumer + i, NULL, consume, consumer_id + i);
