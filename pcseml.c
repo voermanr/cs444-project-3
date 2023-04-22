@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
-#include <sys/semaphore.h>
+#include <semaphore.h>
 #include <fcntl.h>
 
 sem_t *mutex, *free_spots, *items;
 int numProducers;
-int consumers;
-int events;
+int numConsumers;
+int numEvents;
 int numMaximum;
 
 sem_t *sem_open_temp(const char *name, int value)
@@ -33,7 +33,7 @@ int notify_consumers() {
     return 0;
 }
 
-int wait_for_producers(pthread_t *producer) {
+void wait_for_producers(pthread_t *producer) {
     for (int i = 0; i < numProducers; i++) {
         pthread_join(producer[i], NULL);
     }
@@ -56,7 +56,8 @@ void start_consumers(pthread_t *consumer, int *consumer_id) {
 void *produce(void *arg) {
     int *id = arg;
 
-    for (int i = 0; i < events; ++i) {
+    for (int i = 0; i < numEvents; ++i) {
+        int event_number = *id * 100 + i;
         sem_wait(free_spots);
 
         sem_wait(mutex);
@@ -75,10 +76,6 @@ void *produce(void *arg) {
     return NULL;
 }
 
-void *consume (void *arg) {
-    //TODO: make better
-    return NULL;
-}
 
 int start_producers(pthread_t *producer, int *producer_id) {
     for (int i = 0; i < numProducers; i++) {
@@ -90,8 +87,8 @@ int start_producers(pthread_t *producer, int *producer_id) {
 
 int parse_command_line(char **arg) {
     numProducers = (int)strtol((arg[1]),NULL,10);
-    consumers = (int)strtol((arg[2]),NULL,10);
-    events = (int)strtol((arg[3]),NULL,10);
+    numConsumers = (int)strtol((arg[2]), NULL, 10);
+    numEvents = (int)strtol((arg[3]), NULL, 10);
     numMaximum = (int)strtol((arg[4]),NULL,10);
 
     return 0;
@@ -151,7 +148,7 @@ int main(int argc, char* argv[]) {
 
     wait_for_producers(producer);
 
-    notify_consumers();
+    operation_black_friday();
 
     wait_for_consumers();
 
