@@ -40,9 +40,38 @@ void wait_for_producers(pthread_t *producer) {
     return numProducers;
 }
 
-int wait_for_consumers() {
-    //TODO: add new flesh
-    return 0;
+void wait_for_consumers(pthread_t *consumer) {
+    for (int i = 0; i < numConsumers; i++) {
+        pthread_join(consumer[i], NULL);
+    }
+}
+
+void *consume (void *arg) {
+    int *id = arg;
+
+    //TODO: make better
+    while(1) {
+        sem_wait(items);
+
+        sem_wait(mutex);
+
+        if (eventbuf_empty(event_buffer)) {
+            sem_post(mutex);
+            break;
+        }
+
+        int event = eventbuf_get(event_buffer);
+
+        printf("C%d: got event %d\n", *id, event);
+
+        sem_post(mutex);
+
+        sem_post(free_spots);
+    }
+
+    printf("C%d: exiting\n", *id);
+
+    return NULL;
 }
 
 void start_consumers(pthread_t *consumer, int *consumer_id) {
@@ -127,6 +156,12 @@ void setup_consumer_threads(pthread_t **producer, int **consumer_id) {
     producer = calloc(numProducers, sizeof *producer);
 }
 
+void operation_black_friday() {
+    for (int i = 0; i < numConsumers + 1; ++i) {
+        sem_post(items);
+    }
+}
+
 int main(int argc, char* argv[]) {
     validate_input(argc);
 
@@ -150,7 +185,7 @@ int main(int argc, char* argv[]) {
 
     operation_black_friday();
 
-    wait_for_consumers();
+    wait_for_consumers(consumer);
 
     eventbuf_free(event_buffer);
 
