@@ -75,7 +75,7 @@ void *consume (void *arg) {
 
 void start_consumers(pthread_t *consumer, int *consumer_id) {
     //TODO: add more meat to the bones
-    for (int i = 0; i < numProducers; i++) {
+    for (int i = 0; i < numConsumers; i++) {
         consumer_id[i] = i;
         pthread_create(consumer + i, NULL, consume, consumer_id + i);
     }
@@ -90,13 +90,13 @@ void *produce(void *arg) {
 
         sem_wait(mutex);
 
-        printf("P%d: adding event %d\n", *id, i);
+        printf("P%d: adding event %d\n", *id, event_number);
 
-        eventbuf_add(event_buffer, i);
+        eventbuf_add(event_buffer, event_number);
 
         sem_post(mutex);
 
-        sem_post(free_spots);
+        sem_post(items);
     }
 
     printf("P%d: exiting\n", *id);
@@ -139,20 +139,20 @@ void setup_producer_threads(pthread_t **producer, int **producer_id) {
     // I'm stealing this from you
 
     // Allocate producer handle array for all brokers
-    *producer_id = calloc(numProducers, sizeof *producer_id);
+    *producer_id = calloc(numProducers, sizeof **producer_id);
 
     // Allocate producer ID array for all brokers
-    *producer = calloc(numProducers, sizeof *producer);
+    *producer = calloc(numProducers, sizeof **producer);
 }
 
 void setup_consumer_threads(pthread_t **producer, int **consumer_id) {
     // I'm stealing this from you
 
     // Allocate producer handle array for all brokers
-    consumer_id = calloc(numProducers, sizeof *consumer_id);
+    *consumer_id = calloc(numProducers, sizeof **consumer_id);
 
     // Allocate producer ID array for all brokers
-    producer = calloc(numProducers, sizeof *producer);
+    *producer = calloc(numProducers, sizeof **producer);
 }
 
 void operation_black_friday() {
